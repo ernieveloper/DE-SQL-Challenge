@@ -1,0 +1,129 @@
+/*Data Engineering SQL Challenge, Req.R241192
+/*Applicant's name Ernesto Rountri*/
+
+CREATE TABLE user_transactions (
+	transaction_id VARCHAR(10),
+	product_id INT,
+	spend DECIMAL,
+	transaction_date TIMESTAMP
+);
+
+ALTER TABLE user_transactions 
+	ADD CONSTRAINT transaction_id_PK UNIQUE (transaction_id);
+
+
+INSERT INTO user_transactions (transaction_id, product_id, spend, transaction_date)
+VALUES ('E2341341','123424','1500.60','12/31/2020 11:56:00');
+
+INSERT INTO user_transactions (transaction_id, product_id, spend, transaction_date)
+VALUES ('E2341423','123424','1000.20','12/31/2021 12:10:00');
+
+INSERT INTO user_transactions (transaction_id, product_id, spend, transaction_date)
+VALUES ('E2341623','123424','1246.44','12/31/2022 09:30:00');
+
+INSERT INTO user_transactions (transaction_id, product_id, spend, transaction_date)
+VALUES ('E2341322','123424','2145.32','12/31/2023 14:23:00');
+
+SELECT * FROM user_transaction;
+
+CREATE TABLE transactions (
+	transaction_id INT,
+	merchant_id INT,
+	credit_card_id INT,
+	amount INT,
+	transaction_timestamp TIMESTAMP
+);
+
+ALTER TABLE transactions 
+	ADD CONSTRAINT transaction_id_PK UNIQUE (transaction_id);
+
+
+INSERT INTO transactions (transaction_id, merchant_id, credit_card_id, amount, transaction_timestamp)
+VALUES ('1','101','1','100','09/25/2022 12:00:00');
+
+INSERT INTO transactions (transaction_id, merchant_id, credit_card_id, amount, transaction_timestamp)
+VALUES ('2','101','1','100','09/25/2022 12:08:00');
+
+INSERT INTO transactions (transaction_id, merchant_id, credit_card_id, amount, transaction_timestamp)
+VALUES ('3','101','1','100','09/25/2022 12:28:00');
+
+INSERT INTO transactions (transaction_id, merchant_id, credit_card_id, amount, transaction_timestamp)
+VALUES ('4','102','2','300','09/25/2022 12:00:00');
+
+INSERT INTO transactions (transaction_id, merchant_id, credit_card_id, amount, transaction_timestamp)
+VALUES ('6','102','2','400','09/25/2022 14:00:00');
+
+INSERT INTO transactions (transaction_id, merchant_id, credit_card_id, amount, transaction_timestamp)
+VALUES ('7','103','3','560','09/25/2022 15:05:00');
+
+INSERT INTO transactions (transaction_id, merchant_id, credit_card_id, amount, transaction_timestamp)
+VALUES ('8','104','4','120','09/25/2022 15:20:00');
+
+INSERT INTO transactions (transaction_id, merchant_id, credit_card_id, amount, transaction_timestamp)
+VALUES ('9','104','4','130','09/25/2022 15:26:00');
+	
+INSERT INTO transactions (transaction_id, merchant_id, credit_card_id, amount, transaction_timestamp)
+VALUES ('10','104','4','130','09/25/2022 15:31:00');
+
+SELECT * FROM transactions;
+
+CREATE TABLE tweets (
+	user_id INT,
+	tweet_date timestamp,
+	tweet_count INT
+);
+
+INSERT INTO tweets (user_id, tweet_date, tweet_count)
+VALUES ('111','06/01/2022 00:00:00','2');
+
+INSERT INTO tweets (user_id, tweet_date, tweet_count)
+VALUES ('111','06/02/2022 00:00:00','1');
+
+INSERT INTO tweets (user_id, tweet_date, tweet_count)
+VALUES ('111','06/03/2022 00:00:00','3');
+
+INSERT INTO tweets (user_id, tweet_date, tweet_count)
+VALUES ('111','06/04/2022 00:00:00','4');
+
+INSERT INTO tweets (user_id, tweet_date, tweet_count)
+VALUES ('111','06/05/2022 00:00:00','5');
+
+SELECT * FROM tweets;
+
+--Challenge 1
+
+SELECT date_part('YEAR',ut_curr.transaction_date) as YEAR, 
+	ut_curr.product_id, ut_curr.spend as curr_year_spend,
+	ut_prev.spend as prev_year_spend,
+	ROUND(((ut_curr.spend - ut_prev.spend)/ut_prev.spend)*100,2) as yoy_rate
+FROM
+  user_transactions ut_curr
+	left join user_transactions ut_prev 
+	on date_part('YEAR',ut_curr.transaction_date) = date_part('YEAR',ut_prev.transaction_date) + 1
+ORDER BY
+	date_part('YEAR',ut_curr.transaction_date) ASC;
+
+--Challenge 2
+
+WITH prev_tran_cte AS (
+	SELECT transaction_id, merchant_id, credit_card_id, amount,transaction_timestamp,
+	LAG(transaction_timestamp, 1) 
+		OVER (PARTITION BY merchant_id, credit_card_id, amount 
+			ORDER BY transaction_timestamp) AS prev_transaction
+	FROM transactions
+)
+SELECT transaction_id, merchant_id, credit_card_id, amount,transaction_timestamp,
+	prev_transaction, transaction_timestamp - prev_transaction AS time_delta,
+	CASE
+		WHEN transaction_timestamp - prev_transaction < '00:10:00' THEN 'Repeated transaction'
+	ELSE
+		null
+	END AS repeated_transaction
+FROM prev_tran_cte;
+
+--Challenge 3
+	
+SELECT user_id, tweet_date,
+	CAST (AVG(tweet_count) 
+		OVER (ORDER BY tweet_date ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS Numeric(3,2)) AS rolling_avg_3d
+FROM tweets;
