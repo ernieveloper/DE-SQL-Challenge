@@ -1,0 +1,16 @@
+Hi Ernesto,
+Sorry for late reply.
+Candidates evaluating process for this position includes 3 steps:
+1.	Offline case study submit and reviewed by my team under me
+2.	1st round interview(If case study submitted is validated promising) with my team under me
+3.	2nd round interview(If 1st round interview passed) with me.
+
+My team confirmed you did not show expected results during step 1(on case study) e.g. 
+•	ex. 1 - duplicates in the result, didn't use product_id in join, no sum
+•	ex. 2 - no final count
+•	ex. 3 - no partition by user_id
+
+Based on group discussion result, team decided not to continue doing interviews with you for next steps.
+Hopes helpful and clear.
+
+Thanks.
